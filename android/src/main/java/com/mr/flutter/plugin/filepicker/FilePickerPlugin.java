@@ -176,6 +176,12 @@ public class FilePickerPlugin implements MethodChannel.MethodCallHandler, Flutte
             withData = (boolean) arguments.get("withData");
             compressionQuality=(int) arguments.get("compressionQuality");
             allowedExtensions = FileUtils.getMimeTypes((ArrayList<String>) arguments.get("allowedExtensions"));
+            if (arguments.containsKey("allowCompression")) {
+                boolean allowCompression = (boolean) arguments.get("allowCompression");
+                if (!allowCompression) {
+                    compressionQuality = 0;
+                }
+            }
         }
 
         if (call.method != null && call.method.equals("custom") && (allowedExtensions == null || allowedExtensions.length == 0)) {

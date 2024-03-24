@@ -305,7 +305,7 @@ public class FilePickerDelegate implements PluginRegistry.ActivityResultListener
     }
 
     @SuppressWarnings("deprecation")
-    public void startFileExplorer(final String type, final boolean isMultipleSelection, final boolean withData, final String[] allowedExtensions, final int compressionQuality, final MethodChannel.Result result) {
+    public void startFileExplorer(final String type, final boolean isMultipleSelection, final boolean withData, final String[] allowedExtensions, final int compressionQuality, final boolean checkPermission, final MethodChannel.Result result) {
 
         if (!this.setPendingMethodCallAndResult(result)) {
             finishWithAlreadyActiveError(result);
@@ -319,7 +319,7 @@ public class FilePickerDelegate implements PluginRegistry.ActivityResultListener
         // `READ_EXTERNAL_STORAGE` permission is not needed since SDK 33 (Android 13 or higher).
         // `READ_EXTERNAL_STORAGE` & `WRITE_EXTERNAL_STORAGE` are no longer meant to be used, but classified into granular types.
         // Reference: https://developer.android.com/about/versions/13/behavior-changes-13
-        if (Build.VERSION.SDK_INT < 33) {
+        if (checkPermission && Build.VERSION.SDK_INT < 33) {
             if (!this.permissionManager.isPermissionGranted(Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 this.permissionManager.askForPermission(Manifest.permission.READ_EXTERNAL_STORAGE, REQUEST_CODE);
                 return;

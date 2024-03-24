@@ -48,6 +48,7 @@ class _FilePickerDemoState extends State<FilePickerDemo> {
         dialogTitle: _dialogTitleController.text,
         initialDirectory: _initialDirectoryController.text,
         lockParentWindow: _lockParentWindow,
+        checkPermission: false,
       ))
           ?.files;
     } on PlatformException catch (e) {

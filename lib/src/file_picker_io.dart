@@ -33,6 +33,7 @@ class FilePickerIO extends FilePicker {
     bool? withReadStream = false,
     bool lockParentWindow = false,
     bool readSequential = false,
+    bool checkPermission = false,
   }) =>
       _getPath(
         type,
@@ -43,6 +44,7 @@ class FilePickerIO extends FilePicker {
         withData,
         withReadStream,
         compressionQuality,
+        checkPermission,
       );
 
   @override
@@ -64,72 +66,6 @@ class FilePickerIO extends FilePicker {
       }
     }
     return null;
-  }
-
-  Future<FilePickerResult?> _getPath(
-    FileType fileType,
-    bool allowMultipleSelection,
-    bool? allowCompression,
-    List<String>? allowedExtensions,
-    Function(FilePickerStatus)? onFileLoading,
-    bool? withData,
-    bool? withReadStream,
-    int? compressionQuality,
-  ) async {
-    final String type = fileType.name;
-    if (type != 'custom' && (allowedExtensions?.isNotEmpty ?? false)) {
-      throw ArgumentError.value(
-        allowedExtensions,
-        'allowedExtensions',
-        'Custom extension filters are only allowed with FileType.custom. '
-            'Remove the extension filter or change the FileType to FileType.custom.',
-      );
-    }
-    try {
-      _eventSubscription?.cancel();
-      if (onFileLoading != null) {
-        _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
-              (data) => onFileLoading((data as bool)
-                  ? FilePickerStatus.picking
-                  : FilePickerStatus.done),
-              onError: (error) => throw Exception(error),
-            );
-      }
-
-      final List<Map>? result = await _channel.invokeListMethod(type, {
-        'allowMultipleSelection': allowMultipleSelection,
-        'allowedExtensions': allowedExtensions,
-        'allowCompression': allowCompression,
-        'withData': withData,
-        'compressionQuality': compressionQuality,
-      });
-
-      if (result == null) {
-        return null;
-      }
-
-      final List<PlatformFile> platformFiles = <PlatformFile>[];
-
-      for (final Map platformFileMap in result) {
-        platformFiles.add(
-          PlatformFile.fromMap(
-            platformFileMap,
-            readStream: withReadStream!
-                ? File(platformFileMap['path']).openRead()
-                : null,
-          ),
-        );
-      }
-
-      return FilePickerResult(platformFiles);
-    } on PlatformException catch (e) {
-      print('[$_tag] Platform exception: $e');
-      rethrow;
-    } catch (e) {
-      print(
-          '[$_tag] Unsupported operation. Method not found. The exception thrown was: $e');
-      rethrow;
-    }
   }
 
   @override
@@ -159,5 +95,73 @@ class FilePickerIO extends FilePicker {
       bytes: bytes,
       lockParentWindow: lockParentWindow,
     );
+  }
+
+  Future<FilePickerResult?> _getPath(
+    FileType fileType,
+    bool allowMultipleSelection,
+    bool? allowCompression,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    bool? withData,
+    bool? withReadStream,
+    int? compressionQuality,
+    bool? checkPermission,
+  ) async {
+    final String type = fileType.name;
+    if (type != 'custom' && (allowedExtensions?.isNotEmpty ?? false)) {
+      throw ArgumentError.value(
+        allowedExtensions,
+        'allowedExtensions',
+        'Custom extension filters are only allowed with FileType.custom. '
+            'Remove the extension filter or change the FileType to FileType.custom.',
+      );
+    }
+    try {
+      _eventSubscription?.cancel();
+      if (onFileLoading != null) {
+        _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
+              (data) => onFileLoading((data as bool)
+                  ? FilePickerStatus.picking
+                  : FilePickerStatus.done),
+              onError: (error) => throw Exception(error),
+            );
+      }
+
+      final List<Map>? result = await _channel.invokeListMethod(type, {
+        'allowMultipleSelection': allowMultipleSelection,
+        'allowedExtensions': allowedExtensions,
+        'allowCompression': allowCompression,
+        'withData': withData,
+        'compressionQuality': compressionQuality,
+        'checkPermission': checkPermission,
+      });
+
+      if (result == null) {
+        return null;
+      }
+
+      final List<PlatformFile> platformFiles = <PlatformFile>[];
+
+      for (final Map platformFileMap in result) {
+        platformFiles.add(
+          PlatformFile.fromMap(
+            platformFileMap,
+            readStream: withReadStream!
+                ? File(platformFileMap['path']).openRead()
+                : null,
+          ),
+        );
+      }
+
+      return FilePickerResult(platformFiles);
+    } on PlatformException catch (e) {
+      print('[$_tag] Platform exception: $e');
+      rethrow;
+    } catch (e) {
+      print(
+          '[$_tag] Unsupported operation. Method not found. The exception thrown was: $e');
+      rethrow;
+    }
   }
 }

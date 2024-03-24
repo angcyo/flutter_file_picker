@@ -95,7 +95,7 @@ public class FileUtils {
     public static Uri compressImage(Uri originalImageUri, int compressionQuality, Context context) {
         Uri compressedUri;
         try (InputStream imageStream = context.getContentResolver().openInputStream(originalImageUri)) {
-            File compressedFile = createImageFile();
+            File compressedFile = createImageFile(context);
             Bitmap originalBitmap = BitmapFactory.decodeStream(imageStream);
             // Compress and save the image
             FileOutputStream fos = new FileOutputStream(compressedFile);
@@ -113,11 +113,16 @@ public class FileUtils {
         return compressedUri;
     }
 
-    private static File createImageFile() throws IOException {
+    private static File createImageFile(Context context) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(imageFileName, ".jpg", storageDir);
+        try {
+            File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+            return File.createTempFile(imageFileName, ".jpg", storageDir);
+        } catch (IOException e) {
+            File storageDir = context.getExternalCacheDir();
+            return File.createTempFile(imageFileName, ".jpg", storageDir);
+        }
     }
 
     public static String getRealPathFromURI(final Context context, final Uri uri) {

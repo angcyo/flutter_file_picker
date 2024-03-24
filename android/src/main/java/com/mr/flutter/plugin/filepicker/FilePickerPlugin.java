@@ -115,6 +115,7 @@ public class FilePickerPlugin implements MethodChannel.MethodCallHandler, Flutte
     private static boolean isMultipleSelection = false;
     private static boolean withData = false;
     private static int compressionQuality;
+    private static boolean checkPermission = true;
 
     /**
      * Plugin registration.
@@ -182,12 +183,15 @@ public class FilePickerPlugin implements MethodChannel.MethodCallHandler, Flutte
                     compressionQuality = 0;
                 }
             }
+            if (arguments.containsKey("checkPermission")) {
+                checkPermission = (boolean) arguments.get("checkPermission");
+            }
         }
 
         if (call.method != null && call.method.equals("custom") && (allowedExtensions == null || allowedExtensions.length == 0)) {
             result.error(TAG, "Unsupported filter. Make sure that you are only using the extension without the dot, (ie., jpg instead of .jpg). This could also have happened because you are using an unsupported file extension.  If the problem persists, you may want to consider using FileType.any instead.", null);
         } else {
-            this.delegate.startFileExplorer(fileType, isMultipleSelection, withData, allowedExtensions, compressionQuality,result);
+            this.delegate.startFileExplorer(fileType, isMultipleSelection, withData, allowedExtensions, compressionQuality, checkPermission, result);
         }
 
     }

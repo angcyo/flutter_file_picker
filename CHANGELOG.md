@@ -1,3 +1,8 @@
+## 8.0.0+1-fix1
+
+- 修复`allowCompression`属性无效的问题,之前在`compressionQuality>0`时,图片就会压缩成`jpeg`. 现在`allowCompression=false`时, 无论`compressionQuality`为多少, 都不会压缩.
+- 在`Android`平台上, 移除了`sd`卡的权限申请. 默认使用`cache`缓存图片.
+
 ## 8.0.0+1
 Removes linter warnings and fixes CI/CD.
 
